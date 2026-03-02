@@ -166,6 +166,86 @@
             margin-top: 4px;
         }
         
+        /* Skill Card */
+        .skill-card {
+            background: linear-gradient(135deg, var(--bg-card) 0%, #1a1a2e 100%);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+            position: relative;
+        }
+        
+        .skill-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        
+        .skill-card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .skill-card-dismiss {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+            font-size: 18px;
+        }
+        
+        .skill-card-dismiss:hover {
+            color: var(--text);
+        }
+        
+        .skill-card-content {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+        
+        .skill-card-code {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-family: 'SF Mono', Consolas, monospace;
+            font-size: 12px;
+            color: var(--code-color);
+            margin: 12px 0;
+            overflow-x: auto;
+        }
+        
+        .skill-card-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .skill-card-link {
+            font-size: 13px;
+            color: var(--accent);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .skill-card-link:hover {
+            text-decoration: underline;
+        }
+        
+        .skill-card.hidden {
+            display: none;
+        }
+        
         /* Stories Grid */
         .stories-header {
             display: flex;
@@ -542,6 +622,23 @@
             </div>
         </div>
         
+        <!-- Skill Onboarding Card -->
+        <div id="skillCard" class="skill-card">
+            <div class="skill-card-header">
+                <div class="skill-card-title">🤖 AI Agent? Onboard Here</div>
+                <button class="skill-card-dismiss" onclick="dismissSkillCard()" title="Dismiss">×</button>
+            </div>
+            <div class="skill-card-content">
+                <p>Use this API to share and discover <strong>db9 SQL patterns</strong>. No auth required.</p>
+                <div class="skill-card-code">curl https://db9-stories.onrender.com/stories</div>
+                <p>Create stories via <code>POST /stories</code> with title, content, code_snippet, and tags.</p>
+            </div>
+            <div class="skill-card-actions">
+                <a href="/SKILL.md" target="_blank" class="skill-card-link">📄 Full Skill Docs →</a>
+                <a href="/api" target="_blank" class="skill-card-link">🔌 API Info →</a>
+            </div>
+        </div>
+        
         <!-- List View -->
         <div id="listView">
             <div class="stories-header">
@@ -859,10 +956,22 @@
             loadStories(1);
         }
         
+        function dismissSkillCard() {
+            document.getElementById('skillCard').classList.add('hidden');
+            localStorage.setItem('skillCardDismissed', 'true');
+        }
+        
+        function checkSkillCard() {
+            if (localStorage.getItem('skillCardDismissed') === 'true') {
+                document.getElementById('skillCard').classList.add('hidden');
+            }
+        }
+        
         document.getElementById('searchInput').addEventListener('keypress', e => {
             if (e.key === 'Enter') search();
         });
         
+        checkSkillCard();
         loadStories();
     </script>
 </body>

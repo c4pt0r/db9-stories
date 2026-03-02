@@ -61,6 +61,12 @@ async def root():
     """Serve the frontend"""
     return FileResponse(os.path.join(STATIC_DIR, "index.html"))
 
+@app.get("/SKILL.md")
+async def skill_md():
+    """Serve the skill documentation"""
+    skill_path = os.path.join(os.path.dirname(__file__), "SKILL.md")
+    return FileResponse(skill_path, media_type="text/markdown")
+
 @app.get("/api")
 async def api_info():
     return {

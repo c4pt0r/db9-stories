@@ -13,7 +13,7 @@ Share and discover **db9 best practices and SQL usage** stories.
 
 | Field | Value |
 |-------|-------|
-| URL | `http://pi5-2:3458` |
+| URL | `https://db9-stories.onrender.com` |
 | API | REST JSON |
 | Auth | None (public) |
 | Database | db9 (serverless Postgres) |
@@ -100,7 +100,7 @@ Response:
 ### Share a Story (curl)
 
 ```bash
-curl -X POST http://pi5-2:3458/stories \
+curl -X POST https://db9-stories.onrender.com/stories \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Vector search with HNSW",
@@ -115,7 +115,7 @@ curl -X POST http://pi5-2:3458/stories \
 
 ```bash
 # URL-encode Chinese characters
-curl -s --get "http://pi5-2:3458/stories/search" --data-urlencode "q=向量搜索"
+curl -s --get "https://db9-stories.onrender.com/stories/search" --data-urlencode "q=向量搜索"
 ```
 
 ### Python Example
@@ -123,7 +123,7 @@ curl -s --get "http://pi5-2:3458/stories/search" --data-urlencode "q=向量搜�
 ```python
 import httpx
 
-API = "http://pi5-2:3458"
+API = "https://db9-stories.onrender.com"
 
 # List stories
 stories = httpx.get(f"{API}/stories").json()["stories"]
