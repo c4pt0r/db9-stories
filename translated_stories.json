@@ -10,10 +10,10 @@
       "?column?": "2026-03-01 16:42:38.821000"
     },
     "translated": {
-      "title": "Chinese full-text search query mode",
-      "content": "Achieve full-text search in Chinese in the db9 Stories service. Use the chinese configuration to do word segmentation, plainto_tsquery to process user input, and ts_rank to calculate relevance ordering.",
+      "title": "Chinese Full-Text Search Query Mode",
+      "content": "Implement Chinese full-text search in the db9 Stories service. Use the chinese configuration for tokenization, plainto_tsquery to process user input, and ts_rank to calculate relevance ranking.",
       "author": "神乐",
-      "code_snippet": "-- Full-text search queries (in Chinese and English)\nSELECT id, title, author, content,\n       ts_rank(\n           to_tsvector('chinese', title || ' ' || content),\n           plainto_tsquery('chinese', $1)\n       ) AS rank\nFROM stories\nWHERE to_tsvector('chinese', title || ' ' || content) \n      @@ plainto_tsquery('chinese', $1)\nORDER BY rank DESC, created_at DESC\nLIMIT 20;",
+      "code_snippet": "```sql\n-- Full-text search query (supports Chinese and English)\nSELECT id, title, author, content,\n       ts_rank(\n           to_tsvector('chinese', title || ' ' || content),\n           plainto_tsquery('chinese', $1)\n       ) AS rank\nFROM stories\nWHERE to_tsvector('chinese', title || ' ' || content) \n      @@ plainto_tsquery('chinese', $1)\nORDER BY rank DESC, created_at DESC\nLIMIT 20;\n```",
       "tags": [
         "full-text",
         "chinese",
@@ -33,10 +33,10 @@
       "?column?": "2026-03-01 16:42:31.346000"
     },
     "translated": {
-      "title": "Build table structure for db9 Stories service",
-      "content": "Build a story sharing service with db9 to support Chinese full-text search. The table structure contains fields such as titles, content, code snippets, tags, etc., and accelerates full-text search with gin indexing.",
+      "title": "Building the Table Structure for the db9 Stories Service",
+      "content": "Build a story sharing service using db9 that supports full-text search in Chinese. The table structure includes fields for title, content, code snippets, tags, etc., with GIN indexing to accelerate full-text search.",
       "author": "神乐",
-      "code_snippet": "-- Create stories table\nCREATE TABLE stories (\n    id SERIAL PRIMARY KEY,\n    title TEXT NOT NULL,\n    author TEXT DEFAULT 'anonymous',\n    content TEXT NOT NULL,\n    code_snippet TEXT,\n    tags TEXT[],\n    created_at TIMESTAMPTZ DEFAULT NOW(),\n    updated_at TIMESTAMPTZ DEFAULT NOW()\n);\n\n-- Full-text search index (mixed English and Chinese, using jieba participle)\nCREATE INDEX idx_stories_fts ON stories \nUSING GIN (to_tsvector('chinese', title || ' ' || content || ' ' || COALESCE(code_snippet, ''));\n\n-- Index by time\nCREATE INDEX idx_stories_created ON stories (created_at DESC);",
+      "code_snippet": "```sql\n-- Create stories table\nCREATE TABLE stories (\n    id SERIAL PRIMARY KEY,\n    title TEXT NOT NULL,\n    author TEXT DEFAULT 'anonymous',\n    content TEXT NOT NULL,\n    code_snippet TEXT,\n    tags TEXT[],\n    created_at TIMESTAMPTZ DEFAULT NOW(),\n    updated_at TIMESTAMPTZ DEFAULT NOW()\n);\n\n-- Full-text search index (mixed Chinese and English, using jieba for word segmentation)\nCREATE INDEX idx_stories_fts ON stories \nUSING GIN (to_tsvector('chinese', title || ' ' || content || ' ' || COALESCE(code_snippet, ''));\n\n-- Index sorted by time\nCREATE INDEX idx_stories_created ON stories (created_at DESC);\n```",
       "tags": [
         "schema",
         "full-text",
@@ -56,13 +56,13 @@
       "?column?": "2026-03-01 16:34:36.992000"
     },
     "translated": {
-      "title": "Accelerate vector search with HNSW indexing",
-      "content": "db9 supports HNSW indexing for vector similarity search. The database connection is not very stable (serverless cold start problem), but the index has been built. most of the embedding columns are still null and will be refilled when the connection is restored.",
+      "title": "Accelerating Vector Search with HNSW Index",
+      "content": "db9 supports HNSW indexing for vector similarity search. The database connection is somewhat unstable (due to serverless cold start issues), but the index has already been created. Most of the embedding column is still NULL; it will be populated once the connection is restored.",
       "author": "神乐",
-      "code_snippet": "-- Create HNSW index\nCREATE INDEX idx_memories_hnsw ON memories USING hnsw (embedding vector_cosine_ops);\n\n-- HNSW Vector Similarity Search\nSELECT metadata->>'title' as title, section,\n       embedding <=> '[0.9, 0.1, 0.2]' as cosine_distance\nFROM memories\nORDER BY embedding <=> '[0.9, 0.1, 0.2]'  -- Go to HNSW index\nLIMIT 5;",
+      "code_snippet": "```sql\n-- Create HNSW index\nCREATE INDEX idx_memories_hnsw ON memories USING hnsw (embedding vector_cosine_ops);\n\n-- HNSW vector similarity search\nSELECT metadata->>'title' as title, section,\n       embedding <=> '[0.9, 0.1, 0.2]' as cosine_distance\nFROM memories\nORDER BY embedding <=> '[0.9, 0.1, 0.2]'  -- Use HNSW index\nLIMIT 5;\n```",
       "tags": [
         "vector-search",
-        "HNSW",
+        "hnsw",
         "embedding",
         "cosine"
       ]
@@ -79,13 +79,13 @@
       "?column?": "2026-03-01 16:29:33.181000"
     },
     "translated": {
-      "title": "pg_cron timed task",
-      "content": "Run timed tasks directly in the database with pg_cron, no external cron is required. Cleaning up expired data every minute is too easy.",
+      "title": "pg_cron Scheduled Tasks",
+      "content": "Run scheduled tasks directly in the database using pg_cron, without the need for an external cron. Clean up expired data every minute; it's incredibly simple.",
       "author": "神乐",
       "code_snippet": "SELECT cron.schedule(cleanup, 0 3 * * *, DELETE FROM logs WHERE ts < now() - interval 30 days);",
       "tags": [
         "pg_cron",
-        "cron-jobs:"
+        "scheduled-tasks"
       ]
     }
   },
@@ -100,13 +100,13 @@
       "?column?": "2026-03-01 16:28:35.956000"
     },
     "translated": {
-      "title": "Full-text search with db9",
-      "content": "db9 has built-in jieba Chinese word segmentation, you can use chinese config to do full-text search directly, no additional configuration is required. Much easier than Elasticsearch!",
+      "title": "Full-text Search with db9",
+      "content": "db9 has a built-in jieba Chinese word segmentation, allowing for full-text search using the Chinese config without any additional setup. It's much simpler than Elasticsearch!",
       "author": "神乐",
       "code_snippet": "CREATE INDEX idx ON docs USING GIN (to_tsvector(chinese, content));",
       "tags": [
         "full-text-search",
-        "english"
+        "chinese"
       ]
     }
   }

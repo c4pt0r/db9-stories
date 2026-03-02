@@ -1,71 +1,62 @@
 #!/usr/bin/env python3
 """
-Translate all db9 stories to English using free translation API
+Translate all db9 stories to English using OpenAI API
 """
 import httpx
 import json
 import os
 import sys
-import time
 
 API_URL = os.getenv("API_URL", "https://db9-stories.onrender.com")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-def translate_text(text: str) -> str:
-    """Translate Chinese text to English using MyMemory API (free)"""
+def call_gpt(prompt: str, max_tokens: int = 1000) -> str:
+    """Call OpenAI API"""
+    resp = httpx.post(
+        "https://api.openai.com/v1/chat/completions",
+        headers={"Authorization": f"Bearer {OPENAI_API_KEY}"},
+        json={
+            "model": "gpt-4o-mini",
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.3,
+            "max_tokens": max_tokens
+        },
+        timeout=60.0
+    )
+    
+    if resp.status_code != 200:
+        print(f"  ⚠️ API error: {resp.text[:100]}")
+        return None
+    
+    return resp.json()["choices"][0]["message"]["content"].strip()
+
+def translate_text(text: str, field_type: str = "content") -> str:
+    """Translate Chinese text to English"""
     if not text or not any('\u4e00' <= c <= '\u9fff' for c in text):
         return text
     
-    try:
-        resp = httpx.get(
-            "https://api.mymemory.translated.net/get",
-            params={"q": text[:500], "langpair": "zh|en"},  # 500 char limit
-            timeout=30.0
-        )
-        if resp.status_code == 200:
-            data = resp.json()
-            if data.get("responseStatus") == 200:
-                return data["responseData"]["translatedText"]
-    except Exception as e:
-        print(f"  ⚠️ Translation error: {e}")
-    
-    return text
+    prompt = f"""Translate this {field_type} from Chinese to English. 
+Keep technical terms (SQL, db9, HNSW, GIN, JSONB, pg_cron) as-is.
+Be natural and concise. Output ONLY the translation.
 
-def translate_long_text(text: str) -> str:
-    """Translate longer text by chunking"""
-    if not text or not any('\u4e00' <= c <= '\u9fff' for c in text):
-        return text
-    
-    # Split by sentences (Chinese period)
-    sentences = text.replace('。', '。\n').replace('！', '！\n').replace('？', '？\n').split('\n')
-    sentences = [s.strip() for s in sentences if s.strip()]
-    
-    translated = []
-    for s in sentences:
-        t = translate_text(s)
-        translated.append(t)
-        time.sleep(0.5)  # Rate limit
-    
-    return ' '.join(translated)
+{text}"""
+
+    result = call_gpt(prompt)
+    return result if result else text
 
 def translate_code_comments(code: str) -> str:
-    """Translate comments in code (best effort)"""
+    """Translate only comments in code"""
     if not code or not any('\u4e00' <= c <= '\u9fff' for c in code):
         return code
     
-    lines = code.split('\n')
-    result = []
-    
-    for line in lines:
-        # Check if line has Chinese in comment
-        if '--' in line:
-            parts = line.split('--', 1)
-            if len(parts) == 2 and any('\u4e00' <= c <= '\u9fff' for c in parts[1]):
-                translated_comment = translate_text(parts[1].strip())
-                line = f"{parts[0]}-- {translated_comment}"
-                time.sleep(0.3)
-        result.append(line)
-    
-    return '\n'.join(result)
+    prompt = f"""Translate ONLY the Chinese comments to English in this SQL code.
+Keep ALL code exactly as-is. Only translate text after -- or inside /* */.
+Output the complete code with translated comments, nothing else.
+
+{code}"""
+
+    result = call_gpt(prompt, 1500)
+    return result if result else code
 
 def translate_tags(tags) -> list:
     """Translate tags"""
@@ -78,41 +69,50 @@ def translate_tags(tags) -> list:
         else:
             tags = [tags]
     
-    result = []
-    for tag in tags:
-        if any('\u4e00' <= c <= '\u9fff' for c in tag):
-            t = translate_text(tag)
-            result.append(t.lower().replace(' ', '-'))
-            time.sleep(0.3)
-        else:
-            result.append(tag)
+    has_chinese = any(any('\u4e00' <= c <= '\u9fff' for c in t) for t in tags)
+    if not has_chinese:
+        return tags
     
-    return result
+    prompt = f"""Translate these tags to English. Keep technical terms as-is.
+Output ONLY comma-separated tags.
+
+{', '.join(tags)}"""
+
+    result = call_gpt(prompt, 200)
+    if result:
+        return [t.strip().lower().replace(' ', '-') for t in result.split(',')]
+    return tags
 
 def main():
+    if not OPENAI_API_KEY:
+        print("❌ Set OPENAI_API_KEY environment variable")
+        sys.exit(1)
+    
     print(f"📚 Fetching stories from {API_URL}...")
     resp = httpx.get(f"{API_URL}/stories?limit=100", timeout=30.0)
     stories = resp.json()["stories"]
-    print(f"   Found {len(stories)} stories\n")
+    
+    # Filter only Chinese stories (exclude [EN] ones)
+    stories = [s for s in stories if not s['title'].startswith('[EN]')]
+    print(f"   Found {len(stories)} Chinese stories\n")
     
     translated = []
     
     for i, story in enumerate(stories, 1):
         print(f"[{i}/{len(stories)}] 🔄 {story['title']}")
         
-        title_en = translate_text(story["title"])
+        title_en = translate_text(story["title"], "title")
         print(f"        → {title_en}")
         
         new_story = {
             "title": title_en,
-            "content": translate_long_text(story["content"]),
+            "content": translate_text(story["content"], "content"),
             "author": story.get("author", "anonymous"),
             "code_snippet": translate_code_comments(story.get("code_snippet")),
             "tags": translate_tags(story.get("tags")),
         }
         
         translated.append({"original": story, "translated": new_story})
-        time.sleep(1)  # Rate limit between stories
     
     output_file = "translated_stories.json"
     with open(output_file, "w", encoding="utf-8") as f:
