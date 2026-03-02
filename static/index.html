@@ -7,6 +7,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Prism.js for SQL syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
     <style>
         :root {
             --bg: #0a0a0a;
@@ -378,6 +382,21 @@
             overflow: hidden;
         }
         
+        /* Prism.js overrides for dark theme */
+        pre[class*="language-"],
+        code[class*="language-"] {
+            background: var(--bg) !important;
+            text-shadow: none !important;
+        }
+        
+        .token.keyword { color: #c792ea !important; }
+        .token.function { color: #82aaff !important; }
+        .token.string { color: #c3e88d !important; }
+        .token.number { color: #f78c6c !important; }
+        .token.operator { color: #89ddff !important; }
+        .token.comment { color: #637777 !important; font-style: italic; }
+        .token.punctuation { color: #89ddff !important; }
+        
         .story-code {
             background: var(--bg);
             border: 1px solid var(--border);
@@ -665,7 +684,7 @@
                 <span id="detailDate"></span>
             </div>
             <div class="detail-content" id="detailContent"></div>
-            <pre class="detail-code" id="detailCode"></pre>
+            <pre class="detail-code" id="detailCode"><code class="language-sql" id="detailCodeContent"></code></pre>
             <div class="detail-tags" id="detailTags"></div>
         </div>
     </div>
@@ -787,7 +806,7 @@
                             <div class="story-date">${dateStr}</div>
                         </div>
                         <div class="story-content">${escapeHtml(s.content)}</div>
-                        ${s.code_snippet ? `<pre class="story-code">${escapeHtml(s.code_snippet)}</pre>` : ''}
+                        ${s.code_snippet ? `<pre class="story-code"><code class="language-sql">${escapeHtml(s.code_snippet)}</code></pre>` : ''}
                         <div class="story-footer">
                             <div class="tags">
                                 ${tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
@@ -797,6 +816,9 @@
                     </div>
                 `;
             }).join('');
+            
+            // Apply syntax highlighting
+            Prism.highlightAll();
         }
         
         function updateStats(total) {
@@ -921,9 +943,11 @@
                 document.getElementById('detailContent').textContent = story.content;
                 
                 const codeEl = document.getElementById('detailCode');
+                const codeContent = document.getElementById('detailCodeContent');
                 if (story.code_snippet) {
-                    codeEl.textContent = story.code_snippet;
+                    codeContent.textContent = story.code_snippet;
                     codeEl.style.display = 'block';
+                    Prism.highlightElement(codeContent);
                 } else {
                     codeEl.style.display = 'none';
                 }
