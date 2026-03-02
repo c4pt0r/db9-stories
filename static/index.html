@@ -515,7 +515,7 @@
 </head>
 <body data-theme="white">
     <div class="container">
-        <header>
+        <header onclick="goHome()" style="cursor: pointer;">
             <div class="badge">✨ Powered by db9</div>
             <h1>db9 Stories</h1>
             <p class="subtitle">Share and discover db9 best practices, SQL patterns, and tips</p>
@@ -850,6 +850,13 @@
             document.getElementById('listView').style.display = 'block';
             document.querySelector('.search-section').style.display = 'flex';
             document.querySelector('.stats').style.display = 'flex';
+        }
+        
+        function goHome() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('storiesTitle').textContent = 'Latest Stories';
+            showList();
+            loadStories(1);
         }
         
         document.getElementById('searchInput').addEventListener('keypress', e => {
