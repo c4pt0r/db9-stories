@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>db9 Stories</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --bg-card: #141414;
+            --bg-hover: #1a1a1a;
+            --border: #262626;
+            --text: #fafafa;
+            --text-muted: #737373;
+            --accent: #ffffff;
+            --accent-hover: #e4e4e7;
+            --code-color: #a5b4fc;
+        }
+        
+        [data-theme="white"] { --accent: #ffffff; --accent-hover: #e4e4e7; --code-color: #e4e4e7; }
+        [data-theme="purple"] { --accent: #a78bfa; --accent-hover: #8b5cf6; --code-color: #c4b5fd; }
+        [data-theme="blue"] { --accent: #60a5fa; --accent-hover: #3b82f6; --code-color: #93c5fd; }
+        [data-theme="green"] { --accent: #4ade80; --accent-hover: #22c55e; --code-color: #86efac; }
+        [data-theme="orange"] { --accent: #fb923c; --accent-hover: #f97316; --code-color: #fdba74; }
+        [data-theme="pink"] { --accent: #f472b6; --accent-hover: #ec4899; --code-color: #f9a8d4; }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        
+        /* Header */
+        header {
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            color: var(--accent);
+            margin-bottom: 24px;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 16px;
+            background: linear-gradient(to bottom, #fff 0%, #999 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        /* Search */
+        .search-section {
+            display: flex;
+            gap: 12px;
+            max-width: 600px;
+            margin: 40px auto;
+        }
+        
+        .search-input {
+            flex: 1;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 18px;
+            color: var(--text);
+            font-size: 15px;
+            transition: border-color 0.2s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--accent);
+            color: #000;
+        }
+        
+        [data-theme="white"] .btn-primary {
+            color: #000;
+        }
+        
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--bg-hover);
+            border-color: var(--text-muted);
+        }
+        
+        /* Stats */
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            padding: 32px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 48px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        
+        /* Stories Grid */
+        .stories-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .stories-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .stories {
+            display: grid;
+            gap: 16px;
+        }
+        
+        .story-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .story-card:hover {
+            border-color: var(--text-muted);
+            transform: translateY(-2px);
+        }
+        
+        /* Detail View */
+        .detail-view {
+            display: none;
+        }
+        
+        .detail-view.show {
+            display: block;
+        }
+        
+        .detail-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 24px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .detail-back:hover {
+            color: var(--text);
+        }
+        
+        .detail-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        
+        .detail-meta {
+            display: flex;
+            gap: 16px;
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .detail-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text);
+            margin-bottom: 32px;
+        }
+        
+        .detail-code {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            font-family: 'SF Mono', Consolas, monospace;
+            font-size: 14px;
+            color: var(--code-color);
+            overflow-x: auto;
+            margin-bottom: 32px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+        
+        .detail-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .detail-tags .tag {
+            font-size: 14px;
+            padding: 6px 14px;
+        }
+        
+        .story-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .story-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        .story-date {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        
+        .story-content {
+            color: var(--text-muted);
+            font-size: 15px;
+            margin-bottom: 16px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .story-code {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'SF Mono', Consolas, monospace;
+            font-size: 13px;
+            color: var(--code-color);
+            overflow-x: auto;
+            margin-bottom: 16px;
+            white-space: pre-wrap;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .story-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .tag {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        
+        .story-author {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        
+        .modal.show { display: flex; }
+        
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            width: 100%;
+            max-width: 560px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .modal-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 4px;
+        }
+        
+        .close-btn:hover { color: var(--text); }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text);
+            font-size: 15px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-group .hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+        
+        /* Empty & Loading States */
+        .empty-state {
+            text-align: center;
+            padding: 80px 24px;
+            color: var(--text-muted);
+        }
+        
+        .empty-state h3 {
+            font-size: 1.25rem;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: var(--text-muted);
+        }
+        
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            margin-top: 40px;
+            padding: 20px 0;
+        }
+        
+        .pagination-btn {
+            padding: 10px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .pagination-btn:hover:not(:disabled) {
+            border-color: var(--text-muted);
+        }
+        
+        .pagination-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        .pagination-info {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 48px 0;
+            color: var(--text-muted);
+            font-size: 14px;
+            border-top: 1px solid var(--border);
+            margin-top: 80px;
+        }
+        
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        
+        @media (max-width: 640px) {
+            h1 { font-size: 2.5rem; }
+            .stats { gap: 24px; flex-wrap: wrap; }
+            .search-section { flex-direction: column; }
+        }
+    </style>
+</head>
+<body data-theme="white">
+    <div class="container">
+        <header>
+            <div class="badge">✨ Powered by db9</div>
+            <h1>db9 Stories</h1>
+            <p class="subtitle">Share and discover db9 best practices, SQL patterns, and tips</p>
+        </header>
+        
+        <div class="search-section">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search stories...">
+            <button onclick="search()" class="btn btn-primary">Search</button>
+            <button onclick="showModal()" class="btn btn-secondary">Share Story</button>
+        </div>
+        
+        <div class="stats" id="stats">
+            <div class="stat">
+                <div class="stat-value" id="storyCount">-</div>
+                <div class="stat-label">Stories</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">db9</div>
+                <div class="stat-label">Powered by</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">100%</div>
+                <div class="stat-label">Open Source</div>
+            </div>
+        </div>
+        
+        <!-- List View -->
+        <div id="listView">
+            <div class="stories-header">
+                <h2 id="storiesTitle">Latest Stories</h2>
+            </div>
+            
+            <div id="stories" class="stories">
+                <div class="loading">Loading...</div>
+            </div>
+            
+            <div id="pagination" class="pagination" style="display: none;">
+                <button class="pagination-btn" id="prevBtn" onclick="prevPage()">← Previous</button>
+                <span class="pagination-info" id="pageInfo">Page 1</span>
+                <button class="pagination-btn" id="nextBtn" onclick="nextPage()">Next →</button>
+            </div>
+        </div>
+        
+        <!-- Detail View -->
+        <div id="detailView" class="detail-view">
+            <div class="detail-back" onclick="showList()">← Back to stories</div>
+            <h1 class="detail-title" id="detailTitle"></h1>
+            <div class="detail-meta">
+                <span id="detailAuthor"></span>
+                <span id="detailDate"></span>
+            </div>
+            <div class="detail-content" id="detailContent"></div>
+            <pre class="detail-code" id="detailCode"></pre>
+            <div class="detail-tags" id="detailTags"></div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>Built with <a href="https://staging.db9.ai" target="_blank">db9</a> — Serverless Postgres for AI agents</p>
+    </footer>
+    
+    <!-- Create Story Modal -->
+    <div id="modal" class="modal" onclick="hideModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Share Your Story</h2>
+                <button class="close-btn" onclick="hideModal()">&times;</button>
+            </div>
+            <form id="storyForm" onsubmit="submitStory(event)">
+                <div class="form-group">
+                    <label>Title *</label>
+                    <input type="text" name="title" required placeholder="What did you build?">
+                </div>
+                <div class="form-group">
+                    <label>Author</label>
+                    <input type="text" name="author" placeholder="Your name (optional)">
+                </div>
+                <div class="form-group">
+                    <label>Story *</label>
+                    <textarea name="content" required placeholder="Describe your use case, challenges, and how db9 helped..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Code Snippet</label>
+                    <textarea name="code_snippet" placeholder="Share the SQL or code that made it work"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Tags</label>
+                    <input type="text" name="tags" placeholder="vector-search, full-text, pg_cron">
+                    <div class="hint">Comma-separated tags</div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="hideModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Publish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        const API = '';
+        const PAGE_SIZE = 20;
+        let currentPage = 1;
+        let totalStories = 0;
+        let currentQuery = '';
+        
+        async function loadStories(page = 1) {
+            currentPage = page;
+            currentQuery = '';
+            const container = document.getElementById('stories');
+            container.innerHTML = '<div class="loading">Loading...</div>';
+            
+            try {
+                const offset = (page - 1) * PAGE_SIZE;
+                const res = await fetch(`${API}/stories?limit=${PAGE_SIZE}&offset=${offset}`);
+                const data = await res.json();
+                
+                // Get total count
+                const healthRes = await fetch(`${API}/health`);
+                const healthData = await healthRes.json();
+                totalStories = healthData.story_count || 0;
+                
+                renderStories(data.stories);
+                updateStats(totalStories);
+                updatePagination();
+            } catch (e) {
+                container.innerHTML = '<div class="empty-state"><h3>Failed to load</h3><p>Please refresh and try again</p></div>';
+            }
+        }
+        
+        async function search(page = 1) {
+            const q = document.getElementById('searchInput').value.trim();
+            if (!q) { loadStories(); document.getElementById('storiesTitle').textContent = 'Latest Stories'; return; }
+            
+            currentPage = page;
+            currentQuery = q;
+            
+            const container = document.getElementById('stories');
+            container.innerHTML = '<div class="loading">Searching...</div>';
+            document.getElementById('storiesTitle').textContent = `Results for "${q}"`;
+            
+            try {
+                const res = await fetch(`${API}/stories/search?q=${encodeURIComponent(q)}&limit=${PAGE_SIZE}`);
+                const data = await res.json();
+                totalStories = data.count || 0;
+                renderStories(data.stories, q);
+                updatePagination();
+            } catch (e) {
+                container.innerHTML = '<div class="empty-state"><h3>Search failed</h3><p>Please try again</p></div>';
+            }
+        }
+        
+        function renderStories(stories, query = '') {
+            const container = document.getElementById('stories');
+            
+            if (!stories || stories.length === 0) {
+                container.innerHTML = `<div class="empty-state">
+                    <h3>${query ? 'No results found' : 'No stories yet'}</h3>
+                    <p>${query ? `Try a different search term` : 'Be the first to share your db9 story!'}</p>
+                </div>`;
+                return;
+            }
+            
+            container.innerHTML = stories.map(s => {
+                const tags = parseTags(s.tags);
+                const date = s['?column?'] || s.created_at || '';
+                const dateStr = date ? new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+                
+                return `
+                    <div class="story-card" onclick="showDetail(${s.id})">
+                        <div class="story-header">
+                            <div class="story-title">${escapeHtml(s.title)}</div>
+                            <div class="story-date">${dateStr}</div>
+                        </div>
+                        <div class="story-content">${escapeHtml(s.content)}</div>
+                        ${s.code_snippet ? `<pre class="story-code">${escapeHtml(s.code_snippet)}</pre>` : ''}
+                        <div class="story-footer">
+                            <div class="tags">
+                                ${tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
+                            </div>
+                            <div class="story-author">by ${escapeHtml(s.author || 'anonymous')}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function updateStats(total) {
+            document.getElementById('storyCount').textContent = total;
+        }
+        
+        function updatePagination() {
+            const totalPages = Math.ceil(totalStories / PAGE_SIZE);
+            const pagination = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                pagination.style.display = 'none';
+                return;
+            }
+            
+            pagination.style.display = 'flex';
+            document.getElementById('prevBtn').disabled = currentPage <= 1;
+            document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+            document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+        }
+        
+        function prevPage() {
+            if (currentPage > 1) {
+                if (currentQuery) {
+                    search(currentPage - 1);
+                } else {
+                    loadStories(currentPage - 1);
+                }
+            }
+        }
+        
+        function nextPage() {
+            const totalPages = Math.ceil(totalStories / PAGE_SIZE);
+            if (currentPage < totalPages) {
+                if (currentQuery) {
+                    search(currentPage + 1);
+                } else {
+                    loadStories(currentPage + 1);
+                }
+            }
+        }
+        
+        function parseTags(tags) {
+            if (!tags) return [];
+            if (Array.isArray(tags)) return tags;
+            if (tags.startsWith('{') && tags.endsWith('}')) {
+                return tags.slice(1, -1).split(',').filter(t => t);
+            }
+            return [tags];
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;')
+                      .replace(/"/g, '&quot;');
+        }
+        
+        function showModal() {
+            document.getElementById('modal').classList.add('show');
+        }
+        
+        function hideModal(e) {
+            if (!e || e.target.classList.contains('modal')) {
+                document.getElementById('modal').classList.remove('show');
+                document.getElementById('storyForm').reset();
+            }
+        }
+        
+        async function submitStory(e) {
+            e.preventDefault();
+            const form = e.target;
+            const btn = form.querySelector('button[type="submit"]');
+            btn.textContent = 'Publishing...';
+            btn.disabled = true;
+            
+            const data = {
+                title: form.title.value,
+                author: form.author.value || 'anonymous',
+                content: form.content.value,
+                code_snippet: form.code_snippet.value || null,
+                tags: form.tags.value ? form.tags.value.split(',').map(t => t.trim()) : []
+            };
+            
+            try {
+                const res = await fetch(`${API}/stories`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (res.ok) {
+                    hideModal();
+                    loadStories();
+                } else {
+                    alert('Failed to publish. Please try again.');
+                }
+            } catch (e) {
+                alert('Network error');
+            } finally {
+                btn.textContent = 'Publish';
+                btn.disabled = false;
+            }
+        }
+        
+        async function showDetail(id) {
+            try {
+                const res = await fetch(`${API}/stories/${id}`);
+                if (!res.ok) throw new Error('Not found');
+                const story = await res.json();
+                
+                const date = story['?column?'] || story.created_at || '';
+                const dateStr = date ? new Date(date).toLocaleDateString('en-US', { 
+                    year: 'numeric', month: 'long', day: 'numeric' 
+                }) : '';
+                const tags = parseTags(story.tags);
+                
+                document.getElementById('detailTitle').textContent = story.title;
+                document.getElementById('detailAuthor').textContent = `by ${story.author || 'anonymous'}`;
+                document.getElementById('detailDate').textContent = dateStr;
+                document.getElementById('detailContent').textContent = story.content;
+                
+                const codeEl = document.getElementById('detailCode');
+                if (story.code_snippet) {
+                    codeEl.textContent = story.code_snippet;
+                    codeEl.style.display = 'block';
+                } else {
+                    codeEl.style.display = 'none';
+                }
+                
+                document.getElementById('detailTags').innerHTML = 
+                    tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
+                
+                document.getElementById('listView').style.display = 'none';
+                document.getElementById('detailView').classList.add('show');
+                document.querySelector('.search-section').style.display = 'none';
+                document.querySelector('.stats').style.display = 'none';
+                
+                window.scrollTo(0, 0);
+            } catch (e) {
+                alert('Failed to load story');
+            }
+        }
+        
+        function showList() {
+            document.getElementById('detailView').classList.remove('show');
+            document.getElementById('listView').style.display = 'block';
+            document.querySelector('.search-section').style.display = 'flex';
+            document.querySelector('.stats').style.display = 'flex';
+        }
+        
+        document.getElementById('searchInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') search();
+        });
+        
+        loadStories();
+    </script>
+</body>
+</html>
