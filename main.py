@@ -30,7 +30,7 @@ app.add_middleware(
 # db9 config
 DB9_API_URL = os.getenv("DB9_API_URL", "https://staging.db9.ai/api")
 DB9_TOKEN = os.getenv("DB9_TOKEN")
-DB9_ID = os.getenv("DB9_ID", "rkwkfa6enstb")
+DB9_ID = os.getenv("DB9_ID", "9o73bfoiv1zo")
 
 class StoryCreate(BaseModel):
     title: str
